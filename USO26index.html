@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>126th U.S. Open — Live Tracker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    margin: 0; padding: 16px;
+    background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 25%, #A8C99C 60%, #6BA644 85%, #4A7C2E 100%);
+    background-attachment: fixed;
+    color: #1a1a1a; min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .hero { text-align: center; padding: 12px 16px 20px; margin-bottom: 16px; }
+  .hero img { max-height: 130px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.25)); }
+  .hero .text-fallback { color: white; font-size: 32px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 8px rgba(0,0,0,0.4); display: none; }
+  .hero img.hidden + .text-fallback { display: block; }
+  .hero-subtitle { color: white; font-size: 14px; margin-top: 8px; letter-spacing: 1.5px; font-weight: 400; text-shadow: 0 1px 3px rgba(0,0,0,0.4); font-family: "Helvetica Neue", Arial, sans-serif; }
+
+  .margin-banner { background: #EFE8D1; border: 1px solid #B5A881; padding: 14px 20px; border-radius: 6px; text-align: center; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-left: 5px solid #0E5132; }
+  .margin-banner .label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #5a5a5a; margin-bottom: 4px; font-weight: 700; font-family: "Helvetica Neue", Arial, sans-serif; }
+  .margin-banner .value { font-size: 36px; font-weight: 700; line-height: 1.1; font-family: Georgia, serif; }
+  .margin-banner .status { font-size: 14px; margin-top: 4px; color: #3a3a3a; font-family: "Helvetica Neue", Arial, sans-serif; }
+  .winning { color: #C8102E; }
+  .losing { color: #0E5132; }
+  .tied { color: #5a5a5a; }
+
+  .leaderboard-arch { background: #EFE8D1; border-top-left-radius: 50% 80px; border-top-right-radius: 50% 80px; padding: 18px 20px 12px; margin: 0 8px -1px; text-align: center; border: 1px solid #B5A881; border-bottom: none; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }
+  .leaderboard-arch h2 { margin: 0; font-family: Georgia, serif; font-size: 28px; font-weight: 700; letter-spacing: 8px; color: #1a1a1a; text-transform: uppercase; }
+
+  .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: #EFE8D1; border: 1px solid #B5A881; box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; }
+  @media (max-width: 720px) {
+    .teams-grid { grid-template-columns: 1fr; }
+    .hero img { max-height: 90px; }
+    .margin-banner .value { font-size: 28px; }
+    .leaderboard-arch h2 { font-size: 22px; letter-spacing: 4px; }
+    .settings-grid { flex-direction: column; align-items: flex-start; }
+  }
+  .team-card { background: #EFE8D1; }
+  .team-card.charlie-team { border-right: 1px solid #B5A881; }
+  @media (max-width: 720px) {
+    .team-card.charlie-team { border-right: none; border-bottom: 1px solid #B5A881; }
+  }
+  .team-header { padding: 14px 16px; color: white; font-weight: 700; font-size: 20px; text-align: center; letter-spacing: 4px; background: #0E5132; font-family: Georgia, serif; text-transform: uppercase; border-bottom: 2px solid #094127; }
+
+  table { width: 100%; border-collapse: collapse; background: #EFE8D1; }
+  thead th { background: #0E5132; color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; padding: 10px 4px; text-align: center; font-family: "Helvetica Neue", Arial, sans-serif; border-bottom: 2px solid #094127; }
+  tbody td { padding: 12px 4px; border-bottom: 1px solid #C5B98C; font-size: 14px; text-align: center; vertical-align: middle; }
+  .pos-col { width: 60px; }
+  .player-col { text-align: left !important; padding-left: 10px !important; }
+  .thru-col { width: 50px; }
+  .score-col { width: 65px; }
+
+  td.pos-col { border-left: 4px solid #0E5132; font-weight: 700; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #1a1a1a; background: rgba(255,255,255,0.4); }
+  td.player-col { font-family: Georgia, serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1a1a1a; font-size: 13px; }
+  td.thru-col { font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 600; font-size: 13px; color: #5a5a5a; }
+  td.score-col { font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 14px; }
+
+  input.cell-input { width: 100%; border: 1px solid transparent; background: transparent; padding: 4px 4px; border-radius: 3px; font-size: 13px; font-family: inherit; text-align: center; color: inherit; font-weight: inherit; letter-spacing: inherit; }
+  input.cell-input:hover { background: rgba(255,255,255,0.6); border-color: #B5A881; }
+  input.cell-input:focus { outline: none; background: white; border-color: #0E5132; box-shadow: 0 0 0 2px rgba(14,81,50,0.15); }
+  input.cell-input.manual { background: #FFF3CD; border-color: #d4a017; }
+  input.cell-input.score { font-weight: 700; }
+  input.cell-input.thru { color: #5a5a5a; font-weight: 600; }
+  input.cell-input.thru.finished { color: #0E5132; font-weight: 700; }
+
+  tfoot td { background: #DCD3A8; border-top: 3px double #0E5132; padding: 14px 6px; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700; }
+  tfoot td.pos-col { border-left: 4px solid #0E5132; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; color: #0E5132; text-align: center; background: rgba(255,255,255,0.3); }
+  tfoot td.player-col { text-align: left; padding-left: 10px; font-size: 10px; color: #5a5a5a; font-weight: 400; text-transform: none; letter-spacing: 0; }
+  tfoot td.thru-col { color: #5a5a5a; font-size: 11px; }
+  tfoot td.score-col { font-size: 22px; color: #0E5132; font-family: Georgia, serif; }
+
+  tr.row-cut td { opacity: 0.5; background: rgba(180,180,180,0.2); }
+  tr.row-cut td.player-col::after { content: " (MC)"; color: #C8102E; font-size: 11px; font-weight: 700; font-family: "Helvetica Neue", Arial, sans-serif; }
+  tr.row-wd td { opacity: 0.4; background: rgba(200,16,46,0.1); }
+  tr.row-wd td.player-col::after { content: " (WD)"; color: #C8102E; font-size: 11px; font-weight: 700; font-family: "Helvetica Neue", Arial, sans-serif; }
+  tr.row-warning td.player-col::before { content: "⚠ "; color: #d4a017; font-size: 12px; }
+
+  .source-tag { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 2px; margin-left: 4px; vertical-align: middle; font-weight: 700; font-family: "Helvetica Neue", Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
+  .source-auto { background: #C5E1A5; color: #1B5E20; }
+  .source-manual { background: #FFE082; color: #6B4F00; }
+
+  .actions { text-align: center; margin-top: 18px; margin-bottom: 16px; }
+  .btn { padding: 10px 24px; border: 1px solid #B5A881; border-radius: 4px; font-size: 13px; font-weight: 700; cursor: pointer; margin: 0 4px; font-family: "Helvetica Neue", Arial, sans-serif; text-transform: uppercase; letter-spacing: 1px; background: #EFE8D1; color: #0E5132; }
+  .btn:hover { background: #DCD3A8; }
+
+  .control-panel { background: #EFE8D1; border: 1px solid #B5A881; border-radius: 6px; padding: 10px 14px; margin-bottom: 10px; font-size: 13px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); font-family: "Helvetica Neue", Arial, sans-serif; }
+  .control-panel.status-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .status-indicator { width: 10px; height: 10px; border-radius: 50%; background: #6b7785; flex-shrink: 0; }
+  .status-indicator.live { background: #0E5132; animation: pulse 2s infinite; }
+  .status-indicator.error { background: #C8102E; }
+  .status-indicator.loading { background: #d4a017; animation: spin 1s linear infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(14,81,50,0.5);}50%{opacity:0.7;box-shadow:0 0 0 6px rgba(14,81,50,0);} }
+  @keyframes spin { from{transform:rotate(0deg);}to{transform:rotate(360deg);} }
+  .status-text { color: #3a3a3a; font-weight: 500; flex: 1; min-width: 200px; }
+  .status-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .toggle-label { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; color: #3a3a3a; }
+  .toggle-label input { margin: 0; }
+  .btn-mini { padding: 5px 12px; border: 1px solid #B5A881; background: #FFF8E1; border-radius: 4px; cursor: pointer; font-size: 12px; font-family: "Helvetica Neue", Arial, sans-serif; color: #0E5132; font-weight: 600; }
+  .btn-mini:hover { background: #F0E5B6; }
+  .btn-tiny { padding: 3px 9px; border: 1px solid #B5A881; background: #FFF8E1; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: "Helvetica Neue", Arial, sans-serif; color: #0E5132; font-weight: 600; }
+  .btn-tiny:hover { background: #F0E5B6; }
+  .settings-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #0E5132; font-weight: 700; margin-bottom: 8px; font-family: "Helvetica Neue", Arial, sans-serif; }
+  .settings-grid { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .field-label { color: #3a3a3a; font-weight: 500; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .settings-grid input[type="number"] { width: 70px; padding: 5px 8px; border: 1px solid #B5A881; border-radius: 4px; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; background: white; }
+  .settings-grid input[type="number"]:focus { outline: none; border-color: #0E5132; }
+  .formula-display { font-size: 13px; color: #3a3a3a; padding: 5px 10px; background: white; border-radius: 4px; border: 1px solid #B5A881; font-family: "Courier New", monospace; }
+  .formula-display .formula-value { font-weight: 700; color: #0E5132; }
+  .button-group { display: flex; gap: 6px; }
+  .footer { text-align: center; margin-top: 24px; font-size: 11px; color: white; font-family: "Helvetica Neue", Arial, sans-serif; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+  .error-banner { background: #FFF5F5; border: 1px solid #C8102E; color: #6b1d2e; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; font-size: 13px; display: none; font-family: "Helvetica Neue", Arial, sans-serif; }
+  .error-banner.visible { display: block; }
+  .debug-panel { background: #1a2233; color: #e8edf3; padding: 12px; border-radius: 6px; margin-top: 16px; font-family: "Courier New", Consolas, monospace; font-size: 11px; max-height: 400px; overflow: auto; display: none; white-space: pre-wrap; word-break: break-all; }
+  .debug-panel.visible { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hero">
+    <img src="https://res.cloudinary.com/usga-single-app/image/upload/f_auto,fl_lossy,q_auto/c_fill,dpr_2.0,g_center/v1717591996/championships/logos/USO_Logo_FULL_COLOR_FINAL.png"
+         alt="126th U.S. Open Logo"
+         onerror="this.classList.add('hidden')" />
+    <div class="text-fallback">126TH U.S. OPEN</div>
+    <div class="hero-subtitle">SHINNECOCK HILLS GOLF CLUB &middot; SOUTHAMPTON, NY &middot; JUNE 18&ndash;21, 2026</div>
+  </div>
+
+  <div class="margin-banner">
+    <div class="label">Position Margin &middot; Bruder &minus; Freeth</div>
+    <div class="value" id="margin-value">&mdash;</div>
+    <div class="status" id="margin-status">Waiting for live data &mdash; lower position total wins</div>
+  </div>
+
+  <div class="leaderboard-arch">
+    <h2>Leaderboard</h2>
+  </div>
+
+  <div class="teams-grid">
+    <div class="team-card charlie-team">
+      <div class="team-header">Bruder</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="pos-col">Pos</th>
+            <th class="player-col">Player</th>
+            <th class="score-col">To Par</th>
+            <th class="thru-col">Thru</th>
+          </tr>
+        </thead>
+        <tbody id="charlie-body"></tbody>
+        <tfoot>
+          <tr>
+            <td class="pos-col" id="charlie-total">&mdash;</td>
+            <td class="player-col">Total<br>(sum of positions)</td>
+            <td class="score-col">&mdash;</td>
+            <td class="thru-col">&mdash;</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="team-card freeth-team">
+      <div class="team-header">Freeth</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="pos-col">Pos</th>
+            <th class="player-col">Player</th>
+            <th class="score-col">To Par</th>
+            <th class="thru-col">Thru</th>
+          </tr>
+        </thead>
+        <tbody id="freeth-body"></tbody>
+        <tfoot>
+          <tr>
+            <td class="pos-col" id="freeth-total">&mdash;</td>
+            <td class="player-col">Total<br>(sum of positions)</td>
+            <td class="score-col">&mdash;</td>
+            <td class="thru-col">&mdash;</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="reset-btn">Reset Manual Overrides</button>
+  </div>
+
+  <div class="control-panel status-bar">
+    <span class="status-indicator" id="status-indicator"></span>
+    <span class="status-text" id="status-text">Initializing live tracker...</span>
+    <div class="status-actions">
+      <label class="toggle-label">
+        <input type="checkbox" id="auto-refresh-toggle" checked />
+        Auto-refresh (60s)
+      </label>
+      <button class="btn-mini" id="refresh-btn">&#8635; Refresh</button>
+      <button class="btn-mini" id="debug-btn">Debug</button>
+    </div>
+  </div>
+
+  <div class="control-panel">
+    <div class="settings-title">Missed Cut Scoring</div>
+    <div class="settings-grid">
+      <label class="field-label">
+        Cut Line:
+        <input type="number" id="cut-line" min="0" max="200" placeholder="auto" />
+      </label>
+      <div class="button-group">
+        <button class="btn-tiny" id="auto-detect-btn">Auto-detect</button>
+        <button class="btn-tiny" id="clear-cut-btn">Clear</button>
+      </div>
+      <label class="field-label">
+        Penalty offset:
+        <input type="number" id="penalty-offset" value="10" min="0" max="100" />
+      </label>
+      <div class="formula-display">
+        MC Penalty = Cut Line (<span class="formula-value" id="formula-cut">&mdash;</span>)
+        + <span class="formula-value" id="formula-offset">10</span>
+        = <span class="formula-value" id="formula-result">&mdash;</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-banner" id="error-banner"></div>
+  <div class="debug-panel" id="debug-panel"></div>
+
+  <div class="footer">
+    Live data via ESPN public API &middot; Click any cell to manually override &middot; Position-based scoring (lower wins)
+  </div>
+</div>
+
+<script>
+const charlieRoster = [
+  { name: "Rory McIlroy" },
+  { name: "Xander Schauffele" },
+  { name: "Tommy Fleetwood" },
+  { name: "Jon Rahm" },
+  { name: "Ludvig Åberg" }
+];
+const freethRoster = [
+  { name: "Scottie Scheffler" },
+  { name: "Cameron Young" },
+  { name: "Matt Fitzpatrick" },
+  { name: "Bryson DeChambeau" },
+  { name: "Chris Gotterup" }
+];
+
+const STORAGE_KEY = "usopen2026_tracker_v8";
+const REFRESH_INTERVAL_MS = 60 * 1000;
+const API_PRIMARY = "https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga";
+const API_FALLBACK = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
+const DEFAULT_FALLBACK_PENALTY = 100;
+
+let liveData = {};
+let manualOverrides = {};
+let refreshTimer = null;
+let lastRawJSON = null;
+
+function normalizeName(name) {
+  if (!name) return "";
+  return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function loadOverrides() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+      const parsed = JSON.parse(data);
+      manualOverrides = parsed.overrides || {};
+      if (parsed.cutLine !== undefined && parsed.cutLine !== null && parsed.cutLine !== "") {
+        document.getElementById("cut-line").value = parsed.cutLine;
+      }
+      if (parsed.penaltyOffset !== undefined) {
+        document.getElementById("penalty-offset").value = parsed.penaltyOffset;
+      }
+    }
+  } catch(e) {}
+}
+function saveOverrides() {
+  const data = {
+    cutLine: document.getElementById("cut-line").value,
+    penaltyOffset: document.getElementById("penalty-offset").value,
+    overrides: manualOverrides
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function setStatus(state, text) {
+  const ind = document.getElementById("status-indicator");
+  ind.className = "status-indicator " + (state || "");
+  document.getElementById("status-text").textContent = text;
+}
+function showError(msg) {
+  const banner = document.getElementById("error-banner");
+  if (msg) { banner.textContent = msg; banner.classList.add("visible"); }
+  else { banner.classList.remove("visible"); }
+}
+
+// === SCORE-TO-PAR PARSER (v8: STATISTICS-FIRST) ===
+function extractScoreToPar(c) {
+  function tryNormalize(v) {
+    if (v === null || v === undefined) return null;
+    if (typeof v === "number") {
+      if (v === 0) return "E";
+      return v > 0 ? `+${v}` : String(v);
+    }
+    const s = String(v).trim();
+    if (s === "" || s === "—" || s === "-") return null;
+    if (s.toUpperCase() === "E") return "E";
+    if (/^[-+]\d+$/.test(s)) return s;
+    if (/^\d+$/.test(s)) {
+      const n = parseInt(s, 10);
+      return n === 0 ? "E" : (n > 0 ? `+${n}` : String(n));
+    }
+    return null;
+  }
+
+  // 1. STATISTICS FIRST — the authoritative source for tournament-total to-par
+  if (c.statistics && Array.isArray(c.statistics)) {
+    for (const stat of c.statistics) {
+      const matches = (
+        stat.name === "scoreToPar" ||
+        stat.name === "totalScoreToPar" ||
+        stat.name === "TO PAR" ||
+        (stat.abbreviation && stat.abbreviation.toUpperCase().replace(/\s/g, '') === "TOPAR") ||
+        (stat.shortDisplayName && stat.shortDisplayName.toUpperCase().includes("TO PAR")) ||
+        (stat.displayName && stat.displayName.toUpperCase().includes("SCORE TO PAR"))
+      );
+      if (matches) {
+        const dv = tryNormalize(stat.displayValue);
+        if (dv) return dv;
+        const v = tryNormalize(stat.value);
+        if (v) return v;
+      }
+    }
+    // Last-ditch scan: find any stat whose displayValue looks like a score
+    for (const stat of c.statistics) {
+      const dv = tryNormalize(stat.displayValue);
+      if (dv && (dv === "E" || dv.startsWith("-") || dv.startsWith("+"))) {
+        return dv;
+      }
+    }
+  }
+
+  // 2. FALLBACK to c.score
+  if (c.score && typeof c.score === "object") {
+    const dv = tryNormalize(c.score.displayValue);
+    if (dv) return dv;
+    const v = tryNormalize(c.score.value);
+    if (v) return v;
+  }
+  if (typeof c.score === "string" || typeof c.score === "number") {
+    const v = tryNormalize(c.score);
+    if (v) return v;
+  }
+  return "—";
+}
+
+function extractPosition(c) {
+  if (c.status && c.status.position && c.status.position.displayName) return c.status.position.displayName;
+  if (c.status && c.status.position && c.status.position.id) return String(c.status.position.id);
+  if (c.position && c.position.displayName) return c.position.displayName;
+  if (c.position && c.position.id) return String(c.position.id);
+  if (c.statistics && Array.isArray(c.statistics)) {
+    const posStat = c.statistics.find(s => s.name === "position" || s.abbreviation === "POS");
+    if (posStat) return posStat.displayValue || posStat.value;
+  }
+  return "—";
+}
+
+function extractThru(c) {
+  if (c.status && c.status.thru !== undefined && c.status.thru !== null) {
+    const t = c.status.thru;
+    if (t === 18) return "F";
+    if (typeof t === "number" && t >= 0) return String(t);
+    if (typeof t === "string" && t !== "") return t;
+  }
+  if (c.status && c.status.type) {
+    const sd = c.status.type.shortDetail || c.status.type.detail || "";
+    const sdStr = String(sd).trim();
+    if (sdStr) {
+      const upper = sdStr.toUpperCase();
+      if (upper === "F" || (upper.startsWith("F") && upper.length <= 3 && !upper.includes(":"))) return "F";
+      const thruMatch = sdStr.match(/thru\s+(\d+)/i);
+      if (thruMatch) return thruMatch[1];
+      if (/^\d+$/.test(sdStr)) return sdStr;
+      if (sdStr.includes("AM") || sdStr.includes("PM") || sdStr.includes(":")) return "—";
+    }
+  }
+  if (c.status && c.status.type && c.status.type.state === "post") return "F";
+  return "—";
+}
+
+function detectStatus(c, posStr) {
+  const statusName = c.status?.type?.name || c.status?.type?.description || c.status?.name || "";
+  const combined = (String(statusName) + " " + String(posStr)).toUpperCase();
+  if (combined.includes("CUT") || combined.includes(" MC ") || combined.endsWith("MC")) return "cut";
+  if (combined.includes("WD") || combined.includes("WITHDRAW") || combined.includes("DQ")) return "wd";
+  return "active";
+}
+
+function parseESPNResponse(json) {
+  const players = {};
+  try {
+    const events = json.events || [];
+    for (const event of events) {
+      const competitions = event.competitions || [];
+      for (const comp of competitions) {
+        const competitors = comp.competitors || [];
+        for (const c of competitors) {
+          const athlete = c.athlete || c;
+          const name = athlete.displayName || athlete.fullName || athlete.name || "";
+          if (!name) continue;
+          const pos = extractPosition(c);
+          const scoreToPar = extractScoreToPar(c);
+          const thru = extractThru(c);
+          const status = detectStatus(c, pos);
+          players[normalizeName(name)] = {
+            displayName: name,
+            pos: String(pos),
+            scoreToPar: String(scoreToPar),
+            thru: String(thru),
+            status: status,
+            rawCompetitor: c
+          };
+        }
+      }
+    }
+  } catch(e) { console.error("Parse error:", e); }
+  return players;
+}
+
+function logRosterDataToConsole(players) {
+  console.log("=== ROSTER PARSING SUMMARY (v8) ===");
+  const all = [
+    ...charlieRoster.map(p => ({...p, team: "Bruder"})),
+    ...freethRoster.map(p => ({...p, team: "Freeth"}))
+  ];
+  all.forEach(p => {
+    const norm = normalizeName(p.name);
+    const found = players[norm];
+    if (found) {
+      console.log(`[${p.team}] ${p.name}: pos=${found.pos}, scoreToPar=${found.scoreToPar}, thru=${found.thru}, status=${found.status}`);
+      console.log(`         c.score: ${JSON.stringify(found.rawCompetitor?.score)}`);
+      console.log(`         c.statistics: ${JSON.stringify(found.rawCompetitor?.statistics)}`);
+    } else {
+      console.warn(`[${p.team}] ${p.name}: NOT FOUND in API response`);
+    }
+  });
+}
+
+function parsePositionNumericRaw(posStr) {
+  if (!posStr || posStr === "—") return null;
+  const s = String(posStr).trim().toUpperCase();
+  if (s === "" || s === "-") return null;
+  if (s.includes("CUT") || s === "MC") return null;
+  if (s.includes("WD") || s.includes("DQ")) return null;
+  const cleaned = s.replace(/^T/, "");
+  const n = parseInt(cleaned, 10);
+  return isNaN(n) ? null : n;
+}
+
+function autoDetectCutLine() {
+  let maxPos = 0, activeCount = 0;
+  Object.values(liveData).forEach(p => {
+    if (p.status === "active") {
+      const n = parsePositionNumericRaw(p.pos);
+      if (n !== null && n > maxPos) maxPos = n;
+      if (n !== null) activeCount++;
+    }
+  });
+  return { cutLine: maxPos, activeCount };
+}
+
+function getEffectivePenalty() {
+  const cutLineField = document.getElementById("cut-line").value;
+  const offset = parseInt(document.getElementById("penalty-offset").value, 10) || 0;
+  if (cutLineField !== "" && cutLineField !== null) {
+    const cl = parseInt(cutLineField, 10);
+    if (!isNaN(cl)) return cl + offset;
+  }
+  return DEFAULT_FALLBACK_PENALTY;
+}
+
+function updateFormulaDisplay() {
+  const cutLineField = document.getElementById("cut-line").value;
+  const offset = document.getElementById("penalty-offset").value || "0";
+  document.getElementById("formula-cut").textContent = cutLineField === "" ? "—" : cutLineField;
+  document.getElementById("formula-offset").textContent = offset;
+  if (cutLineField !== "") {
+    const cl = parseInt(cutLineField, 10);
+    const off = parseInt(offset, 10) || 0;
+    document.getElementById("formula-result").textContent = isNaN(cl) ? "—" : (cl + off);
+  } else {
+    document.getElementById("formula-result").textContent = `— (fallback ${DEFAULT_FALLBACK_PENALTY})`;
+  }
+}
+
+async function fetchLiveData() {
+  setStatus("loading", "Fetching live scores from ESPN...");
+  let json = null;
+  try {
+    const resp = await fetch(API_PRIMARY, { cache: "no-store" });
+    if (resp.ok) json = await resp.json();
+  } catch(e) { console.warn("Primary endpoint failed:", e); }
+  if (!json) {
+    try {
+      const resp = await fetch(API_FALLBACK, { cache: "no-store" });
+      if (resp.ok) json = await resp.json();
+    } catch(e) { console.warn("Fallback endpoint failed:", e); }
+  }
+  if (!json) {
+    setStatus("error", "Unable to reach live data. Manual mode active.");
+    showError("Could not reach the ESPN API. You can still enter scores manually — they'll auto-save.");
+    return false;
+  }
+  lastRawJSON = json;
+  const players = parseESPNResponse(json);
+  if (Object.keys(players).length === 0) {
+    setStatus("error", "Live feed returned no player data. Manual mode active.");
+    showError("The ESPN API responded but no player data was found.");
+    return false;
+  }
+  liveData = players;
+  showError(null);
+  logRosterDataToConsole(players);
+
+  const cutLineField = document.getElementById("cut-line");
+  if (cutLineField.value === "" || cutLineField.value === null) {
+    const detected = autoDetectCutLine();
+    if (detected.cutLine > 0 && detected.activeCount >= 5 && detected.activeCount < 100) {
+      cutLineField.value = detected.cutLine;
+      saveOverrides();
+    }
+  }
+  updateFormulaDisplay();
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  setStatus("live", `Live · Updated ${timeStr} · ${Object.keys(players).length} players tracked`);
+  renderAll();
+  return true;
+}
+
+function getDisplayForPlayer(team, idx, playerName) {
+  const key = `${team}-${idx}`;
+  const ov = manualOverrides[key];
+  if (ov && (ov.pos !== "" || ov.score !== "" || ov.thru !== "")) {
+    const posUpper = (ov.pos || "").toUpperCase();
+    let status = "active";
+    if (posUpper.includes("CUT") || posUpper === "MC") status = "cut";
+    else if (posUpper.includes("WD") || posUpper.includes("DQ")) status = "wd";
+    return {
+      pos: ov.pos || "",
+      scoreToPar: ov.score || "",
+      thru: ov.thru || "",
+      source: "manual",
+      status,
+      matched: true
+    };
+  }
+  const norm = normalizeName(playerName);
+  const live = liveData[norm];
+  if (live) {
+    return {
+      pos: live.pos,
+      scoreToPar: live.scoreToPar,
+      thru: live.thru,
+      source: "auto",
+      status: live.status,
+      matched: true
+    };
+  }
+  return { pos: "—", scoreToPar: "—", thru: "—", source: "none", status: "active", matched: false };
+}
+
+function parsePositionToNumber(posStr, penalty) {
+  if (!posStr || posStr === "—") return null;
+  const s = String(posStr).trim().toUpperCase();
+  if (s === "" || s === "-") return null;
+  if (s.includes("CUT") || s === "MC") return penalty;
+  if (s.includes("WD") || s.includes("DQ")) return penalty;
+  const cleaned = s.replace(/^T/, "");
+  const n = parseInt(cleaned, 10);
+  return isNaN(n) ? null : n;
+}
+
+function isUnderPar(scoreStr) {
+  if (!scoreStr || scoreStr === "—" || scoreStr === "") return false;
+  const s = String(scoreStr).trim();
+  if (s === "E" || s === "0") return false;
+  return s.startsWith("-");
+}
+
+function buildRow(team, idx, playerData) {
+  const row = document.createElement("tr");
+  row.id = `${team}-row-${idx}`;
+  row.innerHTML = `
+    <td class="pos-col">
+      <input type="text" class="cell-input pos" id="${team}-pos-${idx}" placeholder="—" />
+    </td>
+    <td class="player-col">
+      ${playerData.name.toUpperCase()}
+      <span class="source-tag" id="${team}-tag-${idx}"></span>
+    </td>
+    <td class="score-col">
+      <input type="text" class="cell-input score" id="${team}-score-${idx}" placeholder="—" />
+    </td>
+    <td class="thru-col">
+      <input type="text" class="cell-input thru" id="${team}-thru-${idx}" placeholder="—" />
+    </td>
+  `;
+  return row;
+}
+
+function renderTeam(team, roster) {
+  roster.forEach((player, idx) => {
+    const display = getDisplayForPlayer(team, idx, player.name);
+    const posInput = document.getElementById(`${team}-pos-${idx}`);
+    const scoreInput = document.getElementById(`${team}-score-${idx}`);
+    const thruInput = document.getElementById(`${team}-thru-${idx}`);
+    const row = document.getElementById(`${team}-row-${idx}`);
+    const tag = document.getElementById(`${team}-tag-${idx}`);
+    if (!posInput || !scoreInput || !thruInput) return;
+
+    if (document.activeElement !== posInput) posInput.value = display.pos === "—" ? "" : display.pos;
+    if (document.activeElement !== scoreInput) scoreInput.value = display.scoreToPar === "—" ? "" : display.scoreToPar;
+    if (document.activeElement !== thruInput) thruInput.value = display.thru === "—" ? "" : display.thru;
+
+    posInput.classList.toggle("manual", display.source === "manual");
+    scoreInput.classList.toggle("manual", display.source === "manual");
+    thruInput.classList.toggle("manual", display.source === "manual");
+
+    thruInput.classList.toggle("finished", String(display.thru).toUpperCase() === "F");
+
+    if (isUnderPar(display.scoreToPar)) {
+      scoreInput.style.color = "#C8102E";
+    } else if (display.scoreToPar !== "—" && display.scoreToPar !== "") {
+      scoreInput.style.color = "#0E5132";
+    } else {
+      scoreInput.style.color = "";
+    }
+
+    if (display.source === "auto") { tag.textContent = "AUTO"; tag.className = "source-tag source-auto"; }
+    else if (display.source === "manual") { tag.textContent = "MANUAL"; tag.className = "source-tag source-manual"; }
+    else { tag.textContent = ""; tag.className = "source-tag"; }
+
+    row.classList.remove("row-cut", "row-wd", "row-warning");
+    if (display.status === "cut") row.classList.add("row-cut");
+    else if (display.status === "wd") row.classList.add("row-wd");
+    if (!display.matched && display.source === "none") row.classList.add("row-warning");
+  });
+}
+
+function calculateTeamTotal(team, roster) {
+  const penalty = getEffectivePenalty();
+  let total = 0, hasAny = false;
+  roster.forEach((p, i) => {
+    const display = getDisplayForPlayer(team, i, p.name);
+    const n = parsePositionToNumber(display.pos, penalty);
+    if (n !== null) { total += n; hasAny = true; }
+  });
+  return { total, hasAny };
+}
+
+function updateTotals() {
+  const c = calculateTeamTotal("charlie", charlieRoster);
+  const f = calculateTeamTotal("freeth", freethRoster);
+  document.getElementById("charlie-total").textContent = c.hasAny ? c.total : "—";
+  document.getElementById("freeth-total").textContent = f.hasAny ? f.total : "—";
+  const marginEl = document.getElementById("margin-value");
+  const statusEl = document.getElementById("margin-status");
+  marginEl.classList.remove("winning", "losing", "tied");
+  if (!c.hasAny && !f.hasAny) {
+    marginEl.textContent = "—";
+    marginEl.classList.add("tied");
+    statusEl.textContent = "Waiting for live data — lower position total wins";
+    return;
+  }
+  const margin = c.total - f.total;
+  if (margin < 0) {
+    marginEl.textContent = margin;
+    marginEl.classList.add("losing");
+    statusEl.textContent = `Bruder leads by ${Math.abs(margin)} position${Math.abs(margin) !== 1 ? 's' : ''} (lower total wins)`;
+  } else if (margin > 0) {
+    marginEl.textContent = `+${margin}`;
+    marginEl.classList.add("winning");
+    statusEl.textContent = `Freeth leads by ${margin} position${margin !== 1 ? 's' : ''} (lower total wins)`;
+  } else {
+    marginEl.textContent = "0";
+    marginEl.classList.add("tied");
+    statusEl.textContent = "All square";
+  }
+}
+
+function renderAll() {
+  renderTeam("charlie", charlieRoster);
+  renderTeam("freeth", freethRoster);
+  updateTotals();
+}
+
+function handleManualInput(team, idx) {
+  const posInput = document.getElementById(`${team}-pos-${idx}`);
+  const scoreInput = document.getElementById(`${team}-score-${idx}`);
+  const thruInput = document.getElementById(`${team}-thru-${idx}`);
+  const key = `${team}-${idx}`;
+  const posVal = posInput.value.trim();
+  const scoreVal = scoreInput.value.trim();
+  const thruVal = thruInput.value.trim();
+  if (posVal === "" && scoreVal === "" && thruVal === "") delete manualOverrides[key];
+  else manualOverrides[key] = { pos: posVal, score: scoreVal, thru: thruVal };
+  saveOverrides();
+  renderAll();
+}
+
+function showDebug() {
+  const panel = document.getElementById("debug-panel");
+  if (panel.classList.contains("visible")) { panel.classList.remove("visible"); return; }
+  panel.classList.add("visible");
+  let output = "=== DEBUG INFO ===\n\n";
+  output += `Effective MC penalty: ${getEffectivePenalty()}\n`;
+  const detected = autoDetectCutLine();
+  output += `Auto-detected cut line: ${detected.cutLine} (from ${detected.activeCount} active players)\n\n`;
+  output += "Roster lookup status:\n";
+  [...charlieRoster, ...freethRoster].forEach(p => {
+    const norm = normalizeName(p.name);
+    const found = liveData[norm];
+    output += `  ${p.name} → ${norm} → ${found ? `MATCHED (pos=${found.pos}, thru=${found.thru}, score=${found.scoreToPar}, status=${found.status})` : "NOT FOUND"}\n`;
+  });
+  output += "\n--- Raw first roster player object ---\n";
+  const firstName = normalizeName(charlieRoster[0].name);
+  const firstPlayer = liveData[firstName];
+  if (firstPlayer && firstPlayer.rawCompetitor) {
+    const c = firstPlayer.rawCompetitor;
+    output += `Player: ${firstPlayer.displayName}\n`;
+    output += `c.score: ${JSON.stringify(c.score, null, 2)}\n`;
+    output += `c.statistics: ${JSON.stringify(c.statistics, null, 2)}\n`;
+    output += `c.status: ${JSON.stringify(c.status, null, 2)}\n`;
+  }
+  panel.textContent = output;
+}
+
+function init() {
+  loadOverrides();
+  updateFormulaDisplay();
+  const charlieBody = document.getElementById("charlie-body");
+  const freethBody = document.getElementById("freeth-body");
+  charlieRoster.forEach((p, i) => charlieBody.appendChild(buildRow("charlie", i, p)));
+  freethRoster.forEach((p, i) => freethBody.appendChild(buildRow("freeth", i, p)));
+
+  charlieRoster.forEach((p, i) => {
+    document.getElementById(`charlie-pos-${i}`).addEventListener("input", () => handleManualInput("charlie", i));
+    document.getElementById(`charlie-score-${i}`).addEventListener("input", () => handleManualInput("charlie", i));
+    document.getElementById(`charlie-thru-${i}`).addEventListener("input", () => handleManualInput("charlie", i));
+  });
+  freethRoster.forEach((p, i) => {
+    document.getElementById(`freeth-pos-${i}`).addEventListener("input", () => handleManualInput("freeth", i));
+    document.getElementById(`freeth-score-${i}`).addEventListener("input", () => handleManualInput("freeth", i));
+    document.getElementById(`freeth-thru-${i}`).addEventListener("input", () => handleManualInput("freeth", i));
+  });
+
+  document.getElementById("cut-line").addEventListener("input", () => { saveOverrides(); updateFormulaDisplay(); updateTotals(); });
+  document.getElementById("penalty-offset").addEventListener("input", () => { saveOverrides(); updateFormulaDisplay(); updateTotals(); });
+  document.getElementById("auto-detect-btn").addEventListener("click", () => {
+    const detected = autoDetectCutLine();
+    if (detected.cutLine > 0) {
+      document.getElementById("cut-line").value = detected.cutLine;
+      saveOverrides(); updateFormulaDisplay(); updateTotals();
+    } else alert("Could not auto-detect cut line. Try again after Round 2.");
+  });
+  document.getElementById("clear-cut-btn").addEventListener("click", () => {
+    document.getElementById("cut-line").value = "";
+    saveOverrides(); updateFormulaDisplay(); updateTotals();
+  });
+  document.getElementById("reset-btn").addEventListener("click", () => {
+    if (confirm("Clear all manual overrides? Live data from the API will still populate.")) {
+      manualOverrides = {}; saveOverrides(); renderAll();
+    }
+  });
+  document.getElementById("refresh-btn").addEventListener("click", fetchLiveData);
+  document.getElementById("debug-btn").addEventListener("click", showDebug);
+  document.getElementById("auto-refresh-toggle").addEventListener("change", (e) => {
+    if (e.target.checked) { startAutoRefresh(); fetchLiveData(); }
+    else { stopAutoRefresh(); setStatus("", "Auto-refresh paused. Click Refresh to update."); }
+  });
+
+  renderAll();
+  fetchLiveData();
+  startAutoRefresh();
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(fetchLiveData, REFRESH_INTERVAL_MS);
+}
+function stopAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = null;
+}
+
+init();
+</script>
+</body>
+</html>
