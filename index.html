@@ -52,6 +52,67 @@
     .open-logo-fallback { font-size: 36px; }
   }
 
+
+  /* Mobile portrait compact side-by-side layout */
+  @media (max-width: 720px) and (orientation: portrait) {
+    body { padding: 6px; }
+    .container { max-width: 100%; }
+    .hero { padding: 8px 4px 10px; margin-bottom: 8px; }
+    .official-logo-card { min-height: 76px !important; padding: 8px 10px !important; }
+    .official-open-logo { max-width: 170px !important; max-height: 64px !important; }
+    .hero-subtitle { font-size: 9px; letter-spacing: .7px; line-height: 1.25; margin-top: 7px; }
+    .margin-banner { padding: 8px 8px; margin-bottom: 8px; }
+    .margin-banner .label { font-size: 8px; letter-spacing: 1px; }
+    .margin-banner .value { font-size: 24px; }
+    .margin-banner .status { font-size: 10px; }
+    .leaderboard-arch { margin: 0 2px -1px; padding: 10px 8px 7px; border-top-left-radius: 50% 38px; border-top-right-radius: 50% 38px; }
+    .leaderboard-arch h2 { font-size: 15px; letter-spacing: 3px; }
+
+    /* Keep both teams visible in portrait instead of stacking */
+    .teams-grid { grid-template-columns: 1fr 1fr !important; width: 100%; }
+    .team-card.charlie-team { border-right: 1px solid var(--line) !important; border-bottom: none !important; }
+    .team-header { padding: 8px 4px; font-size: 12px; letter-spacing: 1.4px; }
+
+    table { table-layout: fixed; width: 100%; }
+    thead th { font-size: 7px; letter-spacing: .35px; padding: 5px 1px; }
+    tbody td { padding: 6px 1px; }
+    .pos-col { width: 26px !important; }
+    .player-col { width: auto !important; padding-left: 3px !important; }
+    .score-col { width: 30px !important; }
+    .today-col { width: 30px !important; }
+    .thru-col { width: 26px !important; }
+
+    td.pos-col { border-left-width: 2px; font-size: 10px; }
+    td.player-col { font-size: 8.5px; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    td.score-col, td.today-col, td.thru-col { font-size: 10px; }
+    input.cell-input { font-size: 10px; padding: 2px 0; min-width: 0; }
+    .source-tag { display: none !important; }
+
+    tfoot td { padding: 7px 1px; }
+    tfoot td.pos-col { font-size: 12px; }
+    tfoot td.player-col { font-size: 7px; line-height: 1.1; }
+
+    .actions { margin: 10px 0 8px; }
+    .btn { padding: 7px 12px; font-size: 10px; }
+    .control-panel { padding: 8px 8px; font-size: 10px; }
+    .status-bar { gap: 7px; }
+    .status-text { min-width: 120px; font-size: 10px; }
+    .status-actions { gap: 5px; }
+    .toggle-label { font-size: 10px; }
+    .btn-mini { padding: 4px 8px; font-size: 10px; }
+    .settings-grid { gap: 8px; }
+    .field-label { font-size: 10px; }
+    .settings-grid input[type="number"] { width: 54px; padding: 4px 5px; font-size: 10px; }
+    .formula-display { font-size: 10px; padding: 4px 6px; }
+    .footer { font-size: 9px; }
+  }
+
+  /* Slightly roomier mobile landscape / small tablet handling */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .teams-grid { grid-template-columns: 1fr 1fr !important; }
+    .team-card.charlie-team { border-right: 1px solid var(--line) !important; border-bottom: none !important; }
+  }
+
 </style>
 </head>
 <body>
