@@ -78,11 +78,13 @@ const STORAGE_KEY="open2026_tracker_v2";
 const REFRESH_INTERVAL_MS=30*1000;
 const TOURNAMENT_ID="401811957";
 const API_URLS=[
+  `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?tournamentId=${TOURNAMENT_ID}`,
+  `https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard?tournamentId=${TOURNAMENT_ID}`,
+  `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event=${TOURNAMENT_ID}`,
   `https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?event=${TOURNAMENT_ID}`,
   `https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?tournamentId=${TOURNAMENT_ID}`,
   `https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=20260716`,
-  `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&tournamentId=${TOURNAMENT_ID}`,
-  `https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard?tournamentId=${TOURNAMENT_ID}`,
+  `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard`,
   `https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard`
 ];
 const DEFAULT_FALLBACK_PENALTY=100;let liveData={},manualOverrides={},refreshTimer=null,lastRawJSON=null,lastEndpoint="";
@@ -97,19 +99,24 @@ function extractScoreToPar(c){
   if(c.score&&typeof c.score==="object"){const dv=normScore(c.score.displayValue);if(dv)return dv;const val=normScore(c.score.value);if(val)return val} if(typeof c.score==="string"||typeof c.score==="number"){const v=normScore(c.score);if(v)return v} return "—";
 }
 function extractToday(c){
-  // Current-round score. ESPN sometimes labels this as TODAY, today, roundScore, currentRoundScore, or stores it in statistics.
+  const period = c.status?.period || c.period || c.status?.type?.period;
+  if(Array.isArray(c.linescores) && c.linescores.length){
+    let ls = null;
+    if(period !== undefined && period !== null) ls = c.linescores.find(x => String(x.period) === String(period));
+    if(!ls) ls = c.linescores.find(x => x.isCurrent || x.current);
+    if(!ls) ls = c.linescores[c.linescores.length - 1];
+    if(ls){ const v = normScore(ls.displayValue ?? ls.value); if(v) return v; }
+  }
   if(Array.isArray(c.statistics)){
     for(const stat of c.statistics){
       const key=((stat.name||"")+" "+(stat.displayName||"")+" "+(stat.shortDisplayName||"")+" "+(stat.abbreviation||"")).toUpperCase().replace(/\s/g,"");
-      const matches = key.includes("TODAY") || key.includes("CURRENTROUND") || key.includes("ROUNDSCORE") || key === "RD" || key === "RND";
+      const matches = key.includes("TODAY") || key.includes("CURRENTROUND") || key.includes("ROUNDSCORE");
       if(matches){ const dv=normScore(stat.displayValue); if(dv)return dv; const val=normScore(stat.value); if(val)return val; }
     }
   }
   if(c.today!==undefined){ const v=normScore(c.today?.displayValue ?? c.today); if(v)return v; }
   if(c.currentRoundScore!==undefined){ const v=normScore(c.currentRoundScore?.displayValue ?? c.currentRoundScore); if(v)return v; }
   if(c.roundScore!==undefined){ const v=normScore(c.roundScore?.displayValue ?? c.roundScore); if(v)return v; }
-  // If no separate TODAY field exists, fall back to To Par during Round 1 only; otherwise leave blank to avoid misleading data.
-  const period = c.status?.period || c.status?.type?.period || c.period;
   if(period === 1 || period === "1") return extractScoreToPar(c);
   return "—";
 }
@@ -129,12 +136,12 @@ function extractPosition(c){
   return"—";
 }
 function extractThru(c){
-  const direct = c.status?.thru ?? c.thru ?? c.holesPlayed ?? c.currentHole;
+  const direct = c.status?.thru ?? c.status?.hole ?? c.thru ?? c.holesPlayed ?? c.currentHole;
   if(direct!==undefined&&direct!==null){const t=direct;if(t===18||String(t).toUpperCase()==="F")return"F";if(typeof t==="number"&&t>=0)return String(t);if(typeof t==="string"&&t!=="")return t;}
   const sd=c.status?.type?.shortDetail||c.status?.type?.detail||c.status?.displayName||c.status?.detail||"";
   if(sd){const s=String(sd).trim();const u=s.toUpperCase();if(u==="F"||(u.startsWith("F")&&u.length<=3&&!u.includes(":")))return"F";const m=s.match(/(?:thru|through)\s*(\d+)/i);if(m)return m[1];if(/^\d+$/.test(s))return s;if(s.includes("AM")||s.includes("PM")||s.includes(":"))return"—";}
   if(Array.isArray(c.statistics)){
-    const ts=c.statistics.find(s=>{const key=((s.name||"")+" "+(s.displayName||"")+" "+(s.shortDisplayName||"")+" "+(s.abbreviation||"")).toUpperCase().replace(/\s/g,"");return key.includes("THRU")||key.includes("HOLESPLAYED");});
+    const ts=c.statistics.find(s=>{const key=((s.name||"")+" "+(s.displayName||"")+" "+(s.shortDisplayName||"")+" "+(s.abbreviation||"")).toUpperCase().replace(/\s/g,"");return key.includes("THRU")||key.includes("HOLESPLAYED")||key.includes("HOLE");});
     if(ts){const v=ts.displayValue??ts.value;if(v===18||String(v).toUpperCase()==="F")return"F";if(v!==undefined&&v!==null&&String(v)!=="")return String(v);}
   }
   if(c.status?.type?.state==="post")return"F";
